@@ -4,6 +4,7 @@ exportClasses("PipelinedRDD")
 exportClasses("Broadcast")
 exportMethods(
               "cache",
+              "cartesian",
               "checkpoint",
               "collect",
               "collectPartition",

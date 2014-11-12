@@ -1301,3 +1301,22 @@ setMethod("unionRDD",
             }  
             union.rdd
           })
+
+setGeneric("cartesian",
+           function(rdd, otherRdd) {
+             standardGeneric("cartesian")
+           })
+
+#' @rdname collect-methods
+#' @aliases collectPartition,integer,RDD-method
+setMethod("cartesian",
+          signature(rdd = "RDD", otherRdd = "RDD"),
+          function(rdd, otherRdd) {
+            if (!rdd@env$serialized || !otherRdd@env$serialized) {
+              stop("cartesian is not supported between RDDs with un-serialized data")
+            }
+            jrdd <- getJRDD(rdd)
+            r <- jrdd$cartesian(getJRDD(otherRdd))
+            RDD(r, serialized=TRUE)
+          })
+          

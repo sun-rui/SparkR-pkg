@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.reflect.ClassTag
 
-import org.apache.spark.{SparkEnv, Partition, SparkException, TaskContext, SparkConf}
+import org.apache.spark.{Logging, SparkEnv, Partition, SparkException, TaskContext, SparkConf}
 import org.apache.spark.api.java.{JavaSparkContext, JavaRDD, JavaPairRDD}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
@@ -248,8 +248,8 @@ object RRDD {
       broadcastVars: Array[Broadcast[Object]],
       iter: Iterator[T],
       numPartitions: Int,
-      splitIndex: Int) : File = {
-
+      splitIndex: Int)
+      (implicit tag: ClassTag[T]) : File = {
     val tempDir =
       System.getProperty("spark.local.dir", System.getProperty("java.io.tmpdir")).split(',')(0)
     val tempFile = File.createTempFile("rSpark", "out", new File(tempDir))
@@ -302,16 +302,34 @@ object RRDD {
         dataOut.writeInt(numPartitions)
 
         if (!iter.hasNext) {
-          dataOut.writeInt(0)
+          dataOut.writeInt(0)  
         } else {
           dataOut.writeInt(1)
         }
 
+        val Tuple2Class = classOf[Tuple2[Array[Byte], Array[Byte]]]
+        val isTuple2 = tag.runtimeClass match {
+                         case Tuple2Class => 1
+                         case _ => 0
+                       }
+        if (dataSerialized) {
+          dataOut.writeInt(isTuple2)
+        }
+                
         for (elem <- iter) {
           if (dataSerialized) {
-            val elemArr = elem.asInstanceOf[Array[Byte]]
-            dataOut.writeInt(elemArr.length)
-            dataOut.write(elemArr, 0, elemArr.length)
+            if (isTuple2 == 1) {
+              dataOut.writeInt(2)
+              val elemTuple2 = elem.asInstanceOf[Tuple2[Array[Byte], Array[Byte]]]
+              dataOut.writeInt(elemTuple2._1.length)
+              dataOut.write(elemTuple2._1, 0, elemTuple2._1.length)
+              dataOut.writeInt(elemTuple2._2.length)
+              dataOut.write(elemTuple2._2, 0, elemTuple2._2.length)
+            } else {
+              val elemArr = elem.asInstanceOf[Array[Byte]]
+              dataOut.writeInt(elemArr.length)
+              dataOut.write(elemArr, 0, elemArr.length)
+            }
           } else {
             printOut.println(elem)
           }
