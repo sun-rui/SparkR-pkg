@@ -64,6 +64,18 @@ object SerializeJavaR {
     keys.zip(values).toMap
   }
 
+  def readObject(in: DataInputStream): Any = {
+    val typeStr = readString(in)
+    typeStr match {
+      case "integer"   => readInt(in)
+      case "double"    => readDouble(in)
+      case "character" => readString(in)
+      case "logical"   => readBoolean(in)
+        // TODO: throw exception of protocol error
+      case _           => null
+    }
+  }
+
   def writeInt(out: DataOutputStream, value: Int) {
     out.writeInt(value)
   }
@@ -116,6 +128,16 @@ object SerializeJavaR {
       // TODO: Make writeStringArr work on Iterable ?
       writeStringArr(out, value.keys.toArray) 
       writeStringArr(out, value.values.toArray)
+    }
+  }
+
+  def writeObject(out: DataOutputStream, value: Any) {
+    value match {
+      case x: Int     => writeString(out, "integer"); writeInt(out, x)
+      case x: Double  => writeString(out, "numeric"); writeDouble(out, x)
+      case x: String  => writeString(out, "character"); writeString(out, x)
+      case x: Boolean => writeString(out, "logical"); writeBoolean(out, x)
+      case _          => throw new Exception("unsupported type")
     }
   }
 }

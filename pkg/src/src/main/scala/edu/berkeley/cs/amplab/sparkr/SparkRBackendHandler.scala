@@ -64,7 +64,7 @@ class SparkRBackendHandler(backend: SparkRBackendInterface, server: SparkRBacken
         sparkExecutorEnvMap)
 
       writeInt(dos, 0)
-      writeString(dos, appId)
+      writeObject(dos, appId)
     } catch {
       case e: Exception => {
         System.err.println("handleCreateSparkContext failed with " + e)

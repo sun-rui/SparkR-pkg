@@ -2,6 +2,7 @@
 
 writeString <- function(con, value, withType = FALSE) {
   if (withType) {
+    stopifnot(typeof(value) == "character")
     writeString(con, typeof(value))
   }
   writeInt(con, as.integer(nchar(value) + 1))
@@ -10,6 +11,7 @@ writeString <- function(con, value, withType = FALSE) {
 
 writeInt <- function(con, value, withType = FALSE) {
   if (withType) {
+    stopifnot(typeof(value) == "integer")
     writeString(con, typeof(value))
   }
   writeBin(as.integer(value), con, endian="big")
@@ -17,6 +19,7 @@ writeInt <- function(con, value, withType = FALSE) {
 
 writeDouble <- function(con, value, withType = FALSE) {
   if (withType) {
+    stopifnot(typeof(value) == "numeric")
     writeString(con, typeof(value))
   }
   writeBin(value, con, endian="big")
@@ -24,6 +27,7 @@ writeDouble <- function(con, value, withType = FALSE) {
 
 writeBoolean <- function(con, value, withType = FALSE) {
   if (withType) {
+    stopifnot(typeof(value) == "logical")
     writeString(con, typeof(value))
   }
   # TRUE becomes 1, FALSE becomes 0
@@ -37,6 +41,7 @@ writeRaw <- function(con, batch, serialized = FALSE, withType = FALSE) {
     outputSer <- serialize(batch, ascii = FALSE, conn = NULL)
   }
   if (withType) {
+    stopifnot(typeof(outputSer) == "raw")
     writeString(con, typeof(outputSer))
   }
   writeInt(con, length(outputSer))
@@ -72,6 +77,7 @@ writeVector <- function(con, arr, withType = FALSE) {
 
 writeList <- function(con, list, withType = FALSE) {
   if (withType) {
+    stopifnot(typeof(value) == "list")
     writeString(con, "list")
   }
   writeInt(con, length(list))
