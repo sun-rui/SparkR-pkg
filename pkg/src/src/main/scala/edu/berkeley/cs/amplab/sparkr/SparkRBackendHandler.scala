@@ -30,13 +30,20 @@ class SparkRBackendHandler(backend: SparkRBackendInterface, server: SparkRBacken
     rpcName match {
       case "createSparkContext" => handleCreateSparkContext(dis, dos)
       case "stopBackend" => {
-        dos.write(0)
+        dos.writeInt(0)
+        // return nothing
+        writeObject(dos, ())
+        dos.flush()
+        ctx.writeAndFlush(bos.toByteArray)
         server.close()
+        return
       }
       case _ => dos.writeInt(-1)
      }
 
+    dos.flush()
     val reply = bos.toByteArray
+    System.err.println("Reply: " + reply.map("%02x".format(_)).mkString(" "))
     ctx.write(reply)
   }
   

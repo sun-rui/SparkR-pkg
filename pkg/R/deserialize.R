@@ -7,7 +7,7 @@ readString <- function(con, num = 1) {
     rawToChar(string)  
   }
   if (num == 1) {
-    readSingleString
+    readSingleString()
   } else {
     sapply(1:num, readSingleString)    
   }
@@ -36,7 +36,7 @@ readObject <- function(con, num = 1) {
     raw = readRawLen(con, num),
     vector = readVector(con),
     list = readList(con),
-    void = NULL,
+    null = NULL,
     stop("Unsupported type for deserialization"))
 }
 

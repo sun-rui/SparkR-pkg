@@ -80,8 +80,9 @@ writeList <- function(con, list, withType = FALSE) {
     stopifnot(typeof(value) == "list")
     writeString(con, "list")
   }
-  writeInt(con, length(list))
-  if (length(list) > 0) { 
+  len <- length(list)
+  if (len > 0) { 
+    writeInt(con, len)
     for (a in list) {
       writeObject(con, a, TRUE)
     }

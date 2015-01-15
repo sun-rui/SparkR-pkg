@@ -137,6 +137,7 @@ object SerializeJavaR {
       case x: Double  => writeString(out, "numeric"); writeDouble(out, x)
       case x: String  => writeString(out, "character"); writeString(out, x)
       case x: Boolean => writeString(out, "logical"); writeBoolean(out, x)
+      case x: Unit    => writeString(out, "null")
       case _          => throw new Exception("unsupported type")
     }
   }

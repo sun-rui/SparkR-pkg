@@ -17,8 +17,9 @@ createSparkContext <- function(
 }
 
 stopBackend <- function() {
+  conn <- getConnection()
+  
   invokeJava("stopBackend")
-  invisible(NULL)
 
   # Also close the connection and remove it from our env
   close(conn)
