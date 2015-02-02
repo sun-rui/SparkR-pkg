@@ -76,7 +76,11 @@ private abstract class BaseRRDD[T: ClassTag, U: ClassTag](
   private def rWorkerProcessBuilder() = {
     val rCommand = "Rscript"
     val rOptions = "--vanilla"
-    val rExecScript = rLibDir + "/SparkR/worker/worker.R"
+    val rExecScript = if (System.getProperty("profile-worker") != null) {
+                        rLibDir + "/SparkR/worker/worker.R" + " --profile-worker"
+                      } else {
+                        rLibDir + "/SparkR/worker/worker.R"
+                      }
     val pb = new ProcessBuilder(List(rCommand, rOptions, rExecScript))
     // Unset the R_TESTS environment variable for workers.
     // This is set by R CMD check as startup.Rs

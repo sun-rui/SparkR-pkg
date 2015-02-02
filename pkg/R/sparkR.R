@@ -79,7 +79,8 @@ sparkR.init <- function(
   sparkExecutorEnv = list(),
   sparkJars = "",
   sparkRLibDir = "",
-  sparkRBackendPort = 12345) {
+  sparkRBackendPort = 12345,
+  profileWorker = FALSE) {
 
   if (exists(".sparkRjsc", envir = .sparkREnv)) {
     cat("Re-using existing Spark Context. Please restart R to create a new Spark Context\n")
@@ -95,10 +96,15 @@ sparkR.init <- function(
   if (yarn_conf_dir != "") {
     cp <- paste(cp, yarn_conf_dir, sep = ":")
   }
+  
+  javaOpts <- paste("-Xmx", sparkMem, sep = "")
+  if (!profileWorker) {
+    javaOpts <- paste("-Dprofile-worker", javaOpts, sep = " ")
+  }
   launchBackend(classPath = cp,
                 mainClass = "edu.berkeley.cs.amplab.sparkr.SparkRBackend",
                 args = as.character(sparkRBackendPort),
-                javaOpts = paste("-Xmx", sparkMem, sep = ""))
+                javaOpts = javaOpts)
   Sys.sleep(2) # Wait for backend to come up
   .sparkREnv$sparkRBackendPort <- sparkRBackendPort
   connectBackend("localhost", sparkRBackendPort) # Connect to it
