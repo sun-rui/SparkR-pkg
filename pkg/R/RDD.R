@@ -1323,6 +1323,58 @@ setMethod("zipWithIndex",
            lapplyPartitionsWithIndex(x, partitionFunc)
          })
 
+#' Zip an RDD with another RDD.
+#'
+#' Zips this RDD with another one, returning key-value pairs with the
+#' first element in each RDD second element in each RDD, etc. Assumes
+#' that the two RDDs have the same number of partitions and the same
+#' number of elements in each partition (e.g. one was made through
+#' a map on the other).
+#'
+#' @param x An RDD to be zipped.
+#' @param other Another RDD to be zipped.
+#' @return An RDD zipped from the two RDDs.
+#' @examples
+#'\dontrun{
+#' sc <- sparkR.init()
+#' rdd1 <- parallelize(sc, 0:4)
+#' rdd2 <- parallelize(sc, 1000:1004)
+#' collect(zipRDD(rdd1, rdd2))
+#' # list(list(0, 1000), list(1, 1001), list(2, 1002), list(3, 1003), list(4, 1004))
+#'}
+#' @rdname zipRDD
+#' @aliases zipRDD,RDD
+setMethod("zipRDD",
+          signature(x = "RDD", other = "RDD"),
+          function(x, other) {
+            n1 <- numPartitions(x)
+            n2 <- numPartitions(other)
+            
+            if (n1 != n2) {
+              stop("Can only zip with RDD which has the same number of partitions.")
+            }
+            
+            #TODO: check that each same partition of both RDDs have the same number of items.
+            
+            tagItem <- function(split, part) {
+              mapply(
+                function(item, index) {
+                  list(list(split, index), item)
+                },
+                part,
+                seq_along(part),
+                SIMPLIFY = FALSE)
+            }
+            taggedRdd1 <- lapplyPartitionsWithIndex(x, tagItem)
+            taggedRdd2 <- lapplyPartitionsWithIndex(other, tagItem)
+            joinedRdd <- join(taggedRdd1, taggedRdd2, n1)
+            
+            hashFunc <- function(k) {
+              k[[1]]      # partition number
+            }
+            
+            values(partitionBy(joinedRdd, n1, hashFunc))
+          })
 
 ############ Binary Functions #############
 

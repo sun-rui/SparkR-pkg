@@ -95,6 +95,8 @@ hashCode <- function(key) {
     as.integer(bitwXor(intBits[2], intBits[1]))
   } else if (class(key) == "character") {
     .Call("stringHashCode", key)
+  } else if (class(key) == "list" && length(key) == 2) {
+    hashCode(key[[1]]) * 17 + hashCode(key[[2]])
   } else {
     warning(paste("Could not hash object, returning 0", sep = ""))
     as.integer(0)
