@@ -22,6 +22,12 @@ test_that("union on two RDDs", {
   actual <- collect(union.rdd)
   expect_equal(actual, c(as.list(nums), mockFile))
   expect_true(union.rdd@env$serialized)
+
+  mapped.rdd <- map(text.rdd, function(x) { x })
+  union.rdd <- unionRDD(text.rdd, mapped.rdd)
+  actual <- collect(union.rdd)
+  expect_equal(actual, as.list(c(mockFile, mockFile)))
+  expect_true(union.rdd@env$serialized)
   
   unlink(fileName)
 })

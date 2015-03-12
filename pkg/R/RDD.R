@@ -41,13 +41,16 @@ setMethod("initialize", "RDD", function(.Object, jrdd, serialized,
   .Object
 })
 
-setMethod("initialize", "PipelinedRDD", function(.Object, prev, func, jrdd_val) {
+setMethod("initialize", "PipelinedRDD", function(.Object, prev, func) {
   .Object@env <- new.env()
   .Object@env$isCached <- FALSE
   .Object@env$isCheckpointed <- FALSE
-  .Object@env$jrdd_val <- jrdd_val
-   # This tracks if jrdd_val is serialized
-  .Object@env$serialized <- prev@env$serialized
+  # The actual flag of whether the JRDD contains serialized R objects or not
+  # is determined upon the first call to getJRDD().
+  # By default, the JRDD of a PipelinedRDD contains serialized R objects as the
+  # dataSerialization parameter for getJRDD() by default is TRUE. So set serialized
+  # to TRUE to be consistent with this behavior.
+  .Object@env$serialized <- TRUE
 
   # NOTE: We use prev_serialized to track if prev_jrdd is serialized
   # prev_serialized is used during the delayed computation of JRDD in getJRDD
@@ -64,7 +67,7 @@ setMethod("initialize", "PipelinedRDD", function(.Object, prev, func, jrdd_val) 
     .Object@prev_jrdd <- getJRDD(prev)
     # Since this is the first step in the pipeline, the prev_serialized
     # is same as serialized here.
-    .Object@env$prev_serialized <- .Object@env$serialized
+    .Object@env$prev_serialized <- prev@env$serialized
   } else {
     pipelinedFunc <- function(split, iterator) {
       func(split, prev@func(split, iterator))
@@ -92,7 +95,7 @@ RDD <- function(jrdd, serialized = TRUE, isCached = FALSE,
 }
 
 PipelinedRDD <- function(prev, func) {
-  new("PipelinedRDD", prev, func, NULL)
+  new("PipelinedRDD", prev, func)
 }
 
 
