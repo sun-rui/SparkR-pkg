@@ -1370,3 +1370,25 @@ setMethod("unionRDD",
             }
             union.rdd
           })
+
+#' Get the Cartesian product of two RDDs.
+#'
+#' Return the Cartesian product of the RDD "x" and another one "other", that is,
+#' the RDD of all pairs of elements (a, b) where a is in "x" and b is in "other".
+#'
+#' @param x An RDD.
+#' @param other Another RDD.
+#' @return A new RDD which is the Cartesian product of two RDDs.
+#' @examples
+#'\dontrun{
+#' sc <- sparkR.init()
+#' rdd <- parallelize(sc, 1:2)
+#' collect(sortByKey(cartesian(rdd, rdd)))
+#' # list(list(1, 1), list(1, 2), list(2, 1), list(2, 2))
+#'}
+#' @rdname cartesian
+#' @aliases cartesian,RDD,RDD-method
+setMethod("cartesian",
+          signature(x = "RDD", other = "RDD"),
+          function(x, other) {
+          }
